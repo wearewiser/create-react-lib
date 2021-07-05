@@ -1,0 +1,19 @@
+{
+  "name": "create-tsnode",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnfedoruk/create-tsnode.git"
+  },
+  "author": "John Fedoruk <johnny@johnfedoruk.ca> (https://johnfedoruk.ca/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/johnfedoruk/create-tsnode/issues"
+  },
+  "homepage": "https://github.com/johnfedoruk/create-tsnode#readme"
+}
