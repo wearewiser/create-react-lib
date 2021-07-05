@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/johnfedoruk/create-tsnode#readme",
   "dependencies": {
+    "commander": "^8.0.0",
     "get-installed-path": "^4.0.8",
     "handlebars": "^4.5.3",
     "reflect-metadata": "^0.1.13",
