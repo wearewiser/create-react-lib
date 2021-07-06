@@ -1,12 +1,25 @@
 import { getInstalledPathSync } from 'get-installed-path';
 import { exec } from 'child_process';
-import { dirname, join } from 'path';
-import { access, constants, createReadStream, createWriteStream, lstat, mkdir, readdir, readFile, Stats } from 'fs';
 import { Command } from 'commander';
 import { EOL } from 'os';
-import * as handlebars from 'handlebars';
 import { Transform } from 'stream';
+import {
+  dirname,
+  join,
+} from 'path';
+import {
+  access,
+  constants,
+  createReadStream,
+  createWriteStream,
+  lstat,
+  mkdir,
+  readdir,
+  readFile,
+  Stats,
+} from 'fs';
 import * as ora from 'ora';
+import * as handlebars from 'handlebars';
 
 const EXE_NAME = 'create-nodets';
 const source_dir = join(getInstalledPathSync(EXE_NAME), 'packages', 'nodets');
@@ -46,8 +59,8 @@ async function getVersion(): Promise<string> {
         }
         const version = JSON.parse(file.toString('utf8')).version;
         resolve(version);
-      })
-    }
+      });
+    },
   );
 }
 
@@ -365,7 +378,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     try {
       log_copy_files.start();
       await Promise.all([
-        copyFiles(source_dir, dir, { name: dir, version: version}),
+        copyFiles(source_dir, dir, { version, name: dir }),
         sleep(1000),
       ]);
       log_copy_files.succeed();
