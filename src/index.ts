@@ -8,8 +8,8 @@ import * as handlebars from 'handlebars';
 import { Transform } from 'stream';
 import * as ora from 'ora';
 
-const EXE_NAME = 'create-tsnode';
-const source_dir = join(getInstalledPathSync(EXE_NAME), 'packages', 'tsnode');
+const EXE_NAME = 'create-nodets';
+const source_dir = join(getInstalledPathSync(EXE_NAME), 'packages', 'nodets');
 
 const sleep = (t: number): Promise<void> =>
   new Promise(
