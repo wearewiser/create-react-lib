@@ -259,7 +259,7 @@ async function gitInit(target_dir: string): Promise<string> {
 async function npmInstall(target_dir: string): Promise<string> {
   return new Promise(
     (resolve, reject) => {
-      exec(`cd ${target_dir} && npm install`, (err, stdout, stderr) => {
+      exec(`cd ${target_dir} && npm install`, (err, stdout) => {
         if (err) {
           reject(err);
           return;
