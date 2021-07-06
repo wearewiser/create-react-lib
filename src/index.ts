@@ -1,9 +1,10 @@
-import { getInstalledPathSync } from 'get-installed-path';
+// import { getInstalledPathSync } from 'get-installed-path';
 import { exec } from 'child_process';
 import { Command } from 'commander';
 import { EOL } from 'os';
 import { Transform } from 'stream';
 import {
+  basename,
   dirname,
   join,
 } from 'path';
@@ -20,9 +21,6 @@ import {
 } from 'fs';
 import * as ora from 'ora';
 import * as handlebars from 'handlebars';
-
-const EXE_NAME = 'create-nodets';
-const source_dir = join(getInstalledPathSync(EXE_NAME), 'packages', 'nodets');
 
 const sleep = (t: number): Promise<void> =>
   new Promise(
@@ -49,10 +47,10 @@ class Handlebars extends Transform {
 
 }
 
-async function getVersion(): Promise<string> {
+async function getVersion(project_dir: string): Promise<string> {
   return new Promise<string>(
     (resolve, reject) => {
-      readFile(`${source_dir}/package.json`, (err, file) => {
+      readFile(`${project_dir}/package.json`, (err, file) => {
         if (err) {
           reject(err);
           return;
@@ -306,6 +304,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
 
 (async () => {
   let exit_code = 0;
+
   console.log();
   console.log('-------------------------------------------------------');
   console.log('Welcome to the TSNode project generator');
@@ -313,12 +312,21 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
   console.log('Your project will be ready shortly');
   console.log('-------------------------------------------------------');
   console.log();
-  const version = await getVersion();
+
+
+  if (!process.mainModule || !process.mainModule.filename) {
+    throw new Error('Cannot find own directory - process.mainModule missing');
+  }
+
+  const exe = basename(process.mainModule.filename);
+  const source_dir = join(dirname(dirname(process.mainModule.filename)), 'packages', 'nodets');
+  const version = await getVersion(source_dir);
+
   try {
     const program = new Command();
     program
-      .version('1.0.2')
-      .name(EXE_NAME)
+      .version(version)
+      .name(exe)
       .usage('{<dir> | (-d|--dir) <directory>} [options...]')
       .description('Send bulk email with distinct body, subject, and attachments')
       .argument('[dir]', 'Project directory')
