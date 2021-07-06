@@ -1,9 +1,9 @@
 {
-  "name": "create-tsnode",
-  "version": "0.0.1",
+  "name": "create-nodets",
+  "version": "0.0.2",
   "description": "",
-  "main": "./dist/create-tsnode",
-  "bin": "./dist/create-tsnode",
+  "main": "./dist/create-nodets",
+  "bin": "./dist/create-nodets",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha src/*.spec.ts  src/**/*.spec.ts  src/**/**/*.spec.ts src/**/**/**/*.spec.ts src/**/**/**/**/*.spec.ts --recursive true --require node_modules/ts-node/register --exit",
     "test:watch": "npm run test -- --watch-extensions ts,spec.ts --watch",
@@ -19,14 +19,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/johnfedoruk/create-tsnode.git"
+    "url": "git+ssh://git@github.com/johnfedoruk/create-nodets.git"
   },
   "author": "John Fedoruk <johnny@johnfedoruk.ca> (https://johnfedoruk.ca/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/johnfedoruk/create-tsnode/issues"
+    "url": "https://github.com/johnfedoruk/create-nodets/issues"
   },
-  "homepage": "https://github.com/johnfedoruk/create-tsnode#readme",
+  "homepage": "https://github.com/johnfedoruk/create-nodets#readme",
   "dependencies": {
     "commander": "^8.0.0",
     "get-installed-path": "^4.0.8",
