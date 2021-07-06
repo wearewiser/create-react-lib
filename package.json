@@ -31,6 +31,7 @@
     "commander": "^8.0.0",
     "get-installed-path": "^4.0.8",
     "handlebars": "^4.5.3",
+    "ora": "^5.4.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^5.4.3",
     "tsnode-di": "0.0.3"
@@ -39,7 +40,7 @@
     "@types/chai": "^4.0.4",
     "@types/get-installed-path": "^4.0.0",
     "@types/mocha": "^2.2.43",
-    "@types/node": "^8.0.34",
+    "@types/node": "^10.17.60",
     "chai": "^4.1.2",
     "mocha": "^4.0.1",
     "nodemon": "^1.12.1",
