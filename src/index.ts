@@ -1,4 +1,3 @@
-// import { getInstalledPathSync } from 'get-installed-path';
 import { exec } from 'child_process';
 import { Command } from 'commander';
 import { EOL } from 'os';

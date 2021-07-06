@@ -1,6 +1,6 @@
 {
   "name": "create-nodets",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "main": "./dist/create-nodets",
   "bin": "./dist/create-nodets",
@@ -29,7 +29,6 @@
   "homepage": "https://github.com/johnfedoruk/create-nodets#readme",
   "dependencies": {
     "commander": "^8.0.0",
-    "get-installed-path": "^4.0.8",
     "handlebars": "^4.5.3",
     "ora": "^5.4.1",
     "reflect-metadata": "^0.1.13",
