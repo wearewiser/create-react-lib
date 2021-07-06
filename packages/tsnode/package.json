@@ -1,9 +1,8 @@
 {
-  "name": "create-tsnode",
+  "name": "{{name}}",
   "version": "0.0.0",
   "description": "",
-  "main": "./dist/create-tsnode",
-  "bin": "./dist/create-tsnode",
+  "main": "./dist/{{name}}",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha src/*.spec.ts  src/**/*.spec.ts  src/**/**/*.spec.ts src/**/**/**/*.spec.ts src/**/**/**/**/*.spec.ts --recursive true --require node_modules/ts-node/register --exit",
     "test:watch": "npm run test -- --watch-extensions ts,spec.ts --watch",
@@ -17,30 +16,16 @@
     "migration:up": "npm run tsc && ./node_modules/.bin/typeorm migration:run",
     "migration:down": "npm run tsc && ./node_modules/.bin/typeorm migration:revert"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/johnfedoruk/create-tsnode.git"
-  },
-  "author": "John Fedoruk <johnny@johnfedoruk.ca> (https://johnfedoruk.ca/)",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/johnfedoruk/create-tsnode/issues"
-  },
-  "homepage": "https://github.com/johnfedoruk/create-tsnode#readme",
   "dependencies": {
-    "commander": "^8.0.0",
-    "get-installed-path": "^4.0.8",
-    "handlebars": "^4.5.3",
-    "ora": "^5.4.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^5.4.3",
     "tsnode-di": "0.0.3"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
-    "@types/get-installed-path": "^4.0.0",
     "@types/mocha": "^2.2.43",
-    "@types/node": "^10.17.60",
+    "@types/node": "^8.0.34",
     "chai": "^4.1.2",
     "mocha": "^4.0.1",
     "nodemon": "^1.12.1",
