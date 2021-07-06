@@ -312,7 +312,6 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
   console.log('-------------------------------------------------------');
   console.log();
 
-
   if (!process.mainModule || !process.mainModule.filename) {
     throw new Error('Cannot find own directory - process.mainModule missing');
   }
