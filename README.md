@@ -5,5 +5,5 @@ A utility for initializing NodeJS projects written in TypeScript and compiled wi
 ## Usage
 
 ```bash
-npm init tsnode
+npm init tsnode <dir>
 ```
