@@ -1,6 +1,6 @@
 # {{name}}
 
-Generated with `npm init tsnode@{{version}}`.
+Generated with `npm init nodets@{{version}}`.
 
 ## Scripts
 
