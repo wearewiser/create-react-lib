@@ -1,6 +1,6 @@
 {
   "name": "create-tsnode",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "./dist/create-tsnode",
   "bin": "./dist/create-tsnode",
