@@ -276,7 +276,6 @@ async function copyFiles(source_dir: string, target_dir: string, params: any): P
             testPathExtension(source_file, SKIP_RENDER) ||
             await isBinaryFile(source_file)
           ) {
-            console.log(`no render ${source_file}`)
             read.pipe(write);
           } else {
             read.pipe(new Handlebars(params)).pipe(write);
@@ -360,10 +359,11 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
   }
 
   const PACKAGE_TEMPLATE="react-lib";
+  const pkg_install_dir = join(process.mainModule.filename, '..', '..');
   const source_dir = join(dirname(dirname(process.mainModule.filename)), 'packages', PACKAGE_TEMPLATE);
-  const pkg_name = await getPackageName("./");
-  const exe = `npm init ${pkg_name.replace("create-", "")}`;
-  const version = await getVersion("./");
+  const pkg_name = await getPackageName(pkg_install_dir);
+  const version = await getVersion(pkg_install_dir);
+  const exe = `npm init ${pkg_name.replace("create-", "")}@${version}`;
 
   try {
     const program = new Command();
