@@ -13,15 +13,12 @@
     "test": "node_modules/mocha/bin/mocha src/*.spec.ts  src/**/*.spec.ts  src/**/**/*.spec.ts src/**/**/**/*.spec.ts src/**/**/**/**/*.spec.ts --recursive true --require node_modules/ts-node/register --exit",
     "test:watch": "npm run test -- --watch-extensions ts,spec.ts --watch",
     "coverage": "node node_modules/nyc/bin/nyc.js --exclude '**/*.spec.ts' --exclude 'src/config.ts' --extension .ts --reporter lcov --reporter text npm run test",
-    "start": "./node_modules/.bin/nodemon -q --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --delay 250ms --exec 'npm run build && node $npm_package_main' src/index.ts",
-    "build": "npm run clean && node ./node_modules/.bin/webpack --mode production && chmod +x $npm_package_main",
+    "start": "./node_modules/.bin/nodemon -q --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --delay 250ms --exec 'npm run build && node create-react-lib' src/index.ts",
+    "build": "npm run clean && node ./node_modules/.bin/webpack --mode production && chmod +x ./dist/create-react-lib",
     "tsc": "npm run clean && node node_modules/typescript/bin/tsc --p tsconfig.json",
     "clean": "rm -rf dist",
     "lint": "node node_modules/tslint/bin/tslint -c tslint.json \"src/**/*.ts\"",
-    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore",
-    "migration:up": "npm run tsc && ./node_modules/.bin/typeorm migration:run",
-    "migration:down": "npm run tsc && ./node_modules/.bin/typeorm migration:revert",
-    "postinstall": "echo need to make ignore files in template"
+    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore"
   },
   "repository": {
     "type": "git",
