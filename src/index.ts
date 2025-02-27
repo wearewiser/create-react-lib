@@ -2,8 +2,10 @@ import { exec } from 'child_process';
 import { Command } from 'commander';
 import { EOL } from 'os';
 import { Transform } from 'stream';
+import { isBinaryFile } from 'isbinaryfile';
+import { Observable } from 'rxjs';
+import { filter, map, mergeMap } from 'rxjs/operators';
 import {
-  basename,
   dirname,
   join,
 } from 'path';
@@ -16,6 +18,7 @@ import {
   mkdir,
   readdir,
   readFile,
+  rename,
   Stats,
 } from 'fs';
 import * as ora from 'ora';
@@ -46,10 +49,25 @@ class Handlebars extends Transform {
 
 }
 
-async function getVersion(project_dir: string): Promise<string> {
+async function getPackageName(project_dir: string, pkg_json_name = "package.json"): Promise<string> {
   return new Promise<string>(
     (resolve, reject) => {
-      readFile(`${project_dir}/package.json`, (err, file) => {
+      readFile(`${project_dir}/${pkg_json_name}`, (err, file) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        const name = JSON.parse(file.toString('utf8')).name;
+        resolve(name);
+      });
+    },
+  );
+}
+
+async function getVersion(project_dir: string, pkg_json_name = "package.json"): Promise<string> {
+  return new Promise<string>(
+    (resolve, reject) => {
+      readFile(`${project_dir}/${pkg_json_name}`, (err, file) => {
         if (err) {
           reject(err);
           return;
@@ -208,12 +226,76 @@ async function mkProjectDir(dir: string): Promise<void> {
   );
 }
 
+function testPathExtension(path: string, exts: string[]): boolean {
+  if (exts.length < 1) {
+    return false;
+  }
+  const ext = exts[0] || '';
+  if (new RegExp(ext.replace(/\./g, '\\.') + '$').test(path)) {
+    return true;
+  }
+  return testPathExtension(path, exts.slice(1));
+}
+
+interface FileOverride {
+  directory: string,
+  filepattern: RegExp,
+  renameFn: (name: string) => string,
+}
+
+async function fileRenameOverride(copy_files: FileOverride[]): Promise<void> {
+  return new Promise<void>(
+    (resolve, reject) => {
+      copy_files.forEach(({ directory, filepattern, renameFn }) => {
+        Observable.from(
+          new Promise<string[]>(
+            (resolve, reject) =>
+              readdir(directory, (e: any, files: string[]) => !e ? resolve(files): reject(e))
+          )
+        )
+          .pipe(
+            mergeMap(files => files),
+            filter(src_file => filepattern.test(src_file)),
+            map(src_file => ({
+              src_file,
+              dest_file: renameFn(src_file)
+            })),
+            mergeMap(({ src_file, dest_file }) => {
+              const src = join(directory, src_file);
+              const dest = join(directory, dest_file);
+              return Observable.from(      
+                new Promise<void>(
+                  (resolve, reject) =>
+                    rename(src, dest, (e: any) => !e ? resolve(): reject(e))
+                )
+              );
+            })
+          )
+          .subscribe({
+            next: () => {},
+            error: reject,
+            complete: resolve,
+          });
+      });
+    }
+  )
+}
+
 async function copyFiles(source_dir: string, target_dir: string, params: any): Promise<void> {
   const source_files = await listFiles(source_dir);
   await Promise.all(
     source_files.map(
       source_file => new Promise<void>(
         async (resolve, reject) => {
+          const SKIP_COPY: string[] = [ ];
+          const SKIP_RENDER: string[] = [
+            ".ts",
+            ".tsx",
+          ];
+          if(testPathExtension(source_file, SKIP_COPY)) {
+            console.log(`oh fuck: ${source_file}`);
+            resolve();
+          } 
           const target_file = join(target_dir, source_file.replace(source_dir, ''));
           if (!(await isPathExist(dirname(target_file)))) {
             try {
@@ -235,7 +317,14 @@ async function copyFiles(source_dir: string, target_dir: string, params: any): P
           const write = createWriteStream(target_file);
           const read = createReadStream(source_file);
           write.on('close', resolve);
-          read.pipe(new Handlebars(params)).pipe(write);
+          if(
+            testPathExtension(source_file, SKIP_RENDER) ||
+            await isBinaryFile(source_file)
+          ) {
+            read.pipe(write);
+          } else {
+            read.pipe(new Handlebars(params)).pipe(write);
+          }
         },
       ),
     ),
@@ -306,9 +395,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
 
   console.log();
   console.log('-------------------------------------------------------');
-  console.log('Welcome to the TSNode project generator');
-  console.log();
-  console.log('Your project will be ready shortly');
+  console.log('Welcome to Wiser\'s react component pkg generator');
   console.log('-------------------------------------------------------');
   console.log();
 
@@ -316,19 +403,23 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     throw new Error('Cannot find own directory - process.mainModule missing');
   }
 
-  const exe = basename(process.mainModule.filename);
-  const source_dir = join(dirname(dirname(process.mainModule.filename)), 'packages', 'nodets');
-  const version = await getVersion(source_dir);
+  const PACKAGE_TEMPLATE="react-lib";
+  const pkg_install_dir = join(process.mainModule.filename, '..', '..');
+  const source_dir = join(dirname(dirname(process.mainModule.filename)), 'packages', PACKAGE_TEMPLATE);
+  const pkg_name = await getPackageName(pkg_install_dir);
+  const version = await getVersion(pkg_install_dir);
+  const exe = `npm init ${pkg_name.replace("create-", "")}@${version}`;
 
   try {
     const program = new Command();
     program
-      .version(version)
+      .version(version, '--version')
       .name(exe)
-      .usage('{<dir> | (-d|--dir) <directory>} [options...]')
-      .description('Send bulk email with distinct body, subject, and attachments')
+      .usage('{<dir> | (-d|--dir) <directory>} -- [options...]')
+      .description('Get started building react libraries.')
       .argument('[dir]', 'Project directory')
       .option('-d, --dir <string>', 'Project directory')
+      .option('-o, --org <string>', 'Organization scope')
       .option('--skip-status-check', 'Skip checking git status in CWD')
       .option('--skip-dir-check', 'Skip checking if project dir is empty')
       .option('--skip-npm', 'Skip installing dependencies')
@@ -337,10 +428,13 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     program.parse();
     const options = program.opts();
     const dir = program.args[0] || options.dir;
+    const name = dir;
+    const org = options.org;
     const skip_status_check = options.skipStatusCheck;
     const skip_dir_check = options.skipDirCheck;
     const skip_npm = options.skipNpm;
     const skip_git = options.skipGit;
+    const pkg = org ? `@${org}/${name}` : name;
     if (!dir) {
       program.help();
     }
@@ -384,7 +478,23 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     try {
       log_copy_files.start();
       await Promise.all([
-        copyFiles(source_dir, dir, { version, name: dir }),
+        copyFiles(source_dir, dir, { exe, version, name, pkg, org }),
+        sleep(1000),
+      ]);
+      const OVERRIDE_FILENAMES: FileOverride[] = [
+        {
+          directory: dir,
+          filepattern: /^__.*/,
+          renameFn: (name: string) => name.replace(/^__/, "."),
+        },
+        {
+          directory: dir,
+          filepattern: /^_.*/,
+          renameFn: (name: string) => name.replace(/^_/, ""),
+        },
+      ];
+      await Promise.all([
+        fileRenameOverride(OVERRIDE_FILENAMES),
         sleep(1000),
       ]);
       log_copy_files.succeed();
@@ -434,7 +544,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
       }
     }
   } catch (e) {
-    console.error(e.message);
+    console.error((e as Error).message);
     exit_code = 1;
   } finally {
     console.log('done.');

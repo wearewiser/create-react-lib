@@ -1,0 +1,4 @@
+include .gitignore
+src/
+!packages/
+!dist/
