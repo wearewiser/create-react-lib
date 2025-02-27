@@ -3,7 +3,6 @@ import { Command } from 'commander';
 import { EOL } from 'os';
 import { Transform } from 'stream';
 import {
-  basename,
   dirname,
   join,
 } from 'path';
@@ -20,6 +19,9 @@ import {
 } from 'fs';
 import * as ora from 'ora';
 import * as handlebars from 'handlebars';
+import { isBinaryFile } from 'isbinaryfile';
+
+// const PKG_JSON_SRC = "_package.json";
 
 const sleep = (t: number): Promise<void> =>
   new Promise(
@@ -46,10 +48,25 @@ class Handlebars extends Transform {
 
 }
 
-async function getVersion(project_dir: string): Promise<string> {
+async function getPackageName(project_dir: string, pkg_json_name = "package.json"): Promise<string> {
   return new Promise<string>(
     (resolve, reject) => {
-      readFile(`${project_dir}/package.json`, (err, file) => {
+      readFile(`${project_dir}/${pkg_json_name}`, (err, file) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        const name = JSON.parse(file.toString('utf8')).name;
+        resolve(name);
+      });
+    },
+  );
+}
+
+async function getVersion(project_dir: string, pkg_json_name = "package.json"): Promise<string> {
+  return new Promise<string>(
+    (resolve, reject) => {
+      readFile(`${project_dir}/${pkg_json_name}`, (err, file) => {
         if (err) {
           reject(err);
           return;
@@ -208,12 +225,32 @@ async function mkProjectDir(dir: string): Promise<void> {
   );
 }
 
+function testPathExtension(path: string, exts: string[]): boolean {
+  if (exts.length < 1) {
+    return false;
+  }
+  const ext = exts[0] || '';
+  if (new RegExp(ext.replace(/\./g, '\\.') + '$').test(path)) {
+    return true;
+  }
+  return testPathExtension(path, exts.slice(1));
+}
+
 async function copyFiles(source_dir: string, target_dir: string, params: any): Promise<void> {
   const source_files = await listFiles(source_dir);
   await Promise.all(
     source_files.map(
       source_file => new Promise<void>(
         async (resolve, reject) => {
+          const SKIP_COPY: string[] = [ ];
+          const SKIP_RENDER: string[] = [
+            ".ts",
+            ".tsx",
+          ];
+          if(testPathExtension(source_file, SKIP_COPY)) {
+            console.log(`oh fuck: ${source_file}`);
+            resolve();
+          } 
           const target_file = join(target_dir, source_file.replace(source_dir, ''));
           if (!(await isPathExist(dirname(target_file)))) {
             try {
@@ -235,7 +272,15 @@ async function copyFiles(source_dir: string, target_dir: string, params: any): P
           const write = createWriteStream(target_file);
           const read = createReadStream(source_file);
           write.on('close', resolve);
-          read.pipe(new Handlebars(params)).pipe(write);
+          if(
+            testPathExtension(source_file, SKIP_RENDER) ||
+            await isBinaryFile(source_file)
+          ) {
+            console.log(`no render ${source_file}`)
+            read.pipe(write);
+          } else {
+            read.pipe(new Handlebars(params)).pipe(write);
+          }
         },
       ),
     ),
@@ -306,9 +351,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
 
   console.log();
   console.log('-------------------------------------------------------');
-  console.log('Welcome to the TSNode project generator');
-  console.log();
-  console.log('Your project will be ready shortly');
+  console.log('Welcome to Wiser\'s react component pkg generator');
   console.log('-------------------------------------------------------');
   console.log();
 
@@ -316,19 +359,22 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     throw new Error('Cannot find own directory - process.mainModule missing');
   }
 
-  const exe = basename(process.mainModule.filename);
-  const source_dir = join(dirname(dirname(process.mainModule.filename)), 'packages', 'nodets');
-  const version = await getVersion(source_dir);
+  const PACKAGE_TEMPLATE="react-lib";
+  const source_dir = join(dirname(dirname(process.mainModule.filename)), 'packages', PACKAGE_TEMPLATE);
+  const pkg_name = await getPackageName("./");
+  const exe = `npm init ${pkg_name.replace("create-", "")}`;
+  const version = await getVersion("./");
 
   try {
     const program = new Command();
     program
-      .version(version)
+      .version(version, '--version')
       .name(exe)
       .usage('{<dir> | (-d|--dir) <directory>} [options...]')
-      .description('Send bulk email with distinct body, subject, and attachments')
+      .description('Get started building react libraries.')
       .argument('[dir]', 'Project directory')
       .option('-d, --dir <string>', 'Project directory')
+      .option('-o, --org <string>', 'Organization scope')
       .option('--skip-status-check', 'Skip checking git status in CWD')
       .option('--skip-dir-check', 'Skip checking if project dir is empty')
       .option('--skip-npm', 'Skip installing dependencies')
@@ -337,6 +383,9 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     program.parse();
     const options = program.opts();
     const dir = program.args[0] || options.dir;
+    const name = dir;
+    const org = options.org;
+    const pkg = org ? `@${org}/${name}` : name;
     const skip_status_check = options.skipStatusCheck;
     const skip_dir_check = options.skipDirCheck;
     const skip_npm = options.skipNpm;
@@ -384,7 +433,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     try {
       log_copy_files.start();
       await Promise.all([
-        copyFiles(source_dir, dir, { version, name: dir }),
+        copyFiles(source_dir, dir, { exe, version, name, pkg, org }),
         sleep(1000),
       ]);
       log_copy_files.succeed();
@@ -434,7 +483,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
       }
     }
   } catch (e) {
-    console.error(e.message);
+    console.error((e as Error).message);
     exit_code = 1;
   } finally {
     console.log('done.');
