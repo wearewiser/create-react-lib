@@ -2,6 +2,9 @@ import { exec } from 'child_process';
 import { Command } from 'commander';
 import { EOL } from 'os';
 import { Transform } from 'stream';
+import { isBinaryFile } from 'isbinaryfile';
+import { Observable } from 'rxjs';
+import { filter, map, mergeMap } from 'rxjs/operators';
 import {
   dirname,
   join,
@@ -15,13 +18,11 @@ import {
   mkdir,
   readdir,
   readFile,
+  rename,
   Stats,
 } from 'fs';
 import * as ora from 'ora';
 import * as handlebars from 'handlebars';
-import { isBinaryFile } from 'isbinaryfile';
-
-// const PKG_JSON_SRC = "_package.json";
 
 const sleep = (t: number): Promise<void> =>
   new Promise(
@@ -236,6 +237,50 @@ function testPathExtension(path: string, exts: string[]): boolean {
   return testPathExtension(path, exts.slice(1));
 }
 
+interface FileOverride {
+  directory: string,
+  filepattern: RegExp,
+  renameFn: (name: string) => string,
+}
+
+async function fileRenameOverride(copy_files: FileOverride[]): Promise<void> {
+  return new Promise<void>(
+    (resolve, reject) => {
+      copy_files.forEach(({ directory, filepattern, renameFn }) => {
+        Observable.from(
+          new Promise<string[]>(
+            (resolve, reject) =>
+              readdir(directory, (e: any, files: string[]) => !e ? resolve(files): reject(e))
+          )
+        )
+          .pipe(
+            mergeMap(files => files),
+            filter(src_file => filepattern.test(src_file)),
+            map(src_file => ({
+              src_file,
+              dest_file: renameFn(src_file)
+            })),
+            mergeMap(({ src_file, dest_file }) => {
+              const src = join(directory, src_file);
+              const dest = join(directory, dest_file);
+              return Observable.from(      
+                new Promise<void>(
+                  (resolve, reject) =>
+                    rename(src, dest, (e: any) => !e ? resolve(): reject(e))
+                )
+              );
+            })
+          )
+          .subscribe({
+            next: () => {},
+            error: reject,
+            complete: resolve,
+          });
+      });
+    }
+  )
+}
+
 async function copyFiles(source_dir: string, target_dir: string, params: any): Promise<void> {
   const source_files = await listFiles(source_dir);
   await Promise.all(
@@ -434,6 +479,22 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
       log_copy_files.start();
       await Promise.all([
         copyFiles(source_dir, dir, { exe, version, name, pkg, org }),
+        sleep(1000),
+      ]);
+      const OVERRIDE_FILENAMES: FileOverride[] = [
+        {
+          directory: dir,
+          filepattern: /^__.*/,
+          renameFn: (name: string) => name.replace(/^__/, "."),
+        },
+        {
+          directory: dir,
+          filepattern: /^_.*/,
+          renameFn: (name: string) => name.replace(/^_/, ""),
+        },
+      ];
+      await Promise.all([
+        fileRenameOverride(OVERRIDE_FILENAMES),
         sleep(1000),
       ]);
       log_copy_files.succeed();
