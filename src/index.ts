@@ -415,7 +415,7 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     program
       .version(version, '--version')
       .name(exe)
-      .usage('{<dir> | (-d|--dir) <directory>} [options...]')
+      .usage('{<dir> | (-d|--dir) <directory>} -- [options...]')
       .description('Get started building react libraries.')
       .argument('[dir]', 'Project directory')
       .option('-d, --dir <string>', 'Project directory')
@@ -430,11 +430,11 @@ async function gitCommit(target_dir: string, message: string): Promise<string> {
     const dir = program.args[0] || options.dir;
     const name = dir;
     const org = options.org;
-    const pkg = org ? `@${org}/${name}` : name;
     const skip_status_check = options.skipStatusCheck;
     const skip_dir_check = options.skipDirCheck;
     const skip_npm = options.skipNpm;
     const skip_git = options.skipGit;
+    const pkg = org ? `@${org}/${name}` : name;
     if (!dir) {
       program.help();
     }
