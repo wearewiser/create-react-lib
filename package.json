@@ -18,7 +18,8 @@
     "tsc": "npm run clean && node node_modules/typescript/bin/tsc --p tsconfig.json",
     "clean": "rm -rf dist",
     "lint": "node node_modules/tslint/bin/tslint -c tslint.json \"src/**/*.ts\"",
-    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore"
+    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore",
+    "prepack": "./prepack.js"
   },
   "repository": {
     "type": "git",
