@@ -33,3 +33,17 @@ Options:
   --skip-git           Skip making first commit
   -h, --help           display help for command
 ```
+
+## Development
+
+Clone the repository
+
+```bash
+git clone git@github.com:wearewiser/create-react-lib.git
+```
+
+Then update the git submodules
+
+```bash
+git submodule update --init --recursive
+```

@@ -1,4 +1,5 @@
 include .gitignore
 src/
+packages/**/.git
 !packages/
 !dist/
