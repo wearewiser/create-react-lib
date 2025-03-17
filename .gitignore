@@ -8,3 +8,5 @@
 /.npmrc
 /.vscode/
 /ormconfig.json
+/*.tgz
+/*.ini

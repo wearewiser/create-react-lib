@@ -1,36 +1,39 @@
 {
-  "name": "create-nodets",
-  "version": "0.0.11",
+  "name": "@wiser/create-react-lib",
+  "version": "0.0.1",
   "description": "",
-  "main": "./dist/create-nodets",
-  "bin": "./dist/create-nodets",
+  "main": "./dist/create-react-lib",
+  "bin": "./dist/create-react-lib",
+  "files": [
+    "packages/**/*",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
     "test": "node_modules/mocha/bin/mocha src/*.spec.ts  src/**/*.spec.ts  src/**/**/*.spec.ts src/**/**/**/*.spec.ts src/**/**/**/**/*.spec.ts --recursive true --require node_modules/ts-node/register --exit",
     "test:watch": "npm run test -- --watch-extensions ts,spec.ts --watch",
     "coverage": "node node_modules/nyc/bin/nyc.js --exclude '**/*.spec.ts' --exclude 'src/config.ts' --extension .ts --reporter lcov --reporter text npm run test",
-    "start": "./node_modules/.bin/nodemon -q --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --delay 250ms --exec 'npm run build && node $npm_package_main' src/index.ts",
-    "build": "npm run clean && node ./node_modules/.bin/webpack --mode production && chmod +x $npm_package_main",
+    "start": "./node_modules/.bin/nodemon -q --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --delay 250ms --exec 'npm run build && node create-react-lib' src/index.ts",
+    "build": "npm run clean && node ./node_modules/.bin/webpack --mode production && chmod +x ./dist/create-react-lib",
     "tsc": "npm run clean && node node_modules/typescript/bin/tsc --p tsconfig.json",
     "clean": "rm -rf dist",
     "lint": "node node_modules/tslint/bin/tslint -c tslint.json \"src/**/*.ts\"",
-    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore",
-    "migration:up": "npm run tsc && ./node_modules/.bin/typeorm migration:run",
-    "migration:down": "npm run tsc && ./node_modules/.bin/typeorm migration:revert",
-    "postinstall": "mv packages/nodets/gitignore packages/nodets/.gitignore"
+    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/johnfedoruk/create-nodets.git"
+    "url": "git+ssh://git@github.com/wearewiser/create-react-lib.git"
   },
-  "author": "John Fedoruk <johnny@johnfedoruk.ca> (https://johnfedoruk.ca/)",
+  "author": "John Fedoruk <john.fedoruk@wearewiser.com> (https://wearewiser.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/johnfedoruk/create-nodets/issues"
+    "url": "https://github.com/wearewiser/create-react-lib/issues"
   },
-  "homepage": "https://github.com/johnfedoruk/create-nodets#readme",
+  "homepage": "https://github.com/wearewiser/create-react-lib#readme",
   "dependencies": {
     "commander": "^8.0.0",
     "handlebars": "^4.5.3",
+    "isbinaryfile": "^4.0.10",
     "ora": "^5.4.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^5.4.3",

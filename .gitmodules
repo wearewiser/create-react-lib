@@ -1,0 +1,4 @@
+[submodule "packages/react-lib"]
+	path = packages/react-lib
+	url = git@github.com:wearewiser/react-lib.git
+	branch = release/1
