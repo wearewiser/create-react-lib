@@ -61,54 +61,28 @@ workflows:
           BUILD_ALPHA: "npm run build"
           BUILD_BETA: "npm run build"
           BUILD_STABLE: "npm run build"
-      - deploy:
-          name: "Release/1"
+      - publish:
+          name: "Publish"
           skip: false
-          context: "wiser-mainframe"
+          context: "publisher"
           requires:
             - "Build"
           filters:
             branches:
-              only: release/1
-          # env agnostic
-          GITOPS_ORG: ""
-          GITOPS_REPO: ""
-          # alpha
-          GOOGLE_PROJECT_ID_ALPHA: ""
-          GOOGLE_COMPUTE_ZONE_ALPHA: ""
-          GOOGLE_CLUSTER_ALPHA: ""
-          DEPLOYMENT_ALPHA: ""
-          CONTAINER_ALPHA: ""
-          NAMESPACE_ALPHA: ""
-          GITOPS_ALPHA_DEPLOYMENT_PATH: ""
-          # beta
-          GOOGLE_PROJECT_ID_BETA: ""
-          GOOGLE_COMPUTE_ZONE_BETA: ""
-          GOOGLE_CLUSTER_BETA: ""
-          DEPLOYMENT_BETA: ""
-          CONTAINER_BETA: ""
-          NAMESPACE_BETA: ""
-          GITOPS_BETA_DEPLOYMENT_PATH: ""
-          # stable
-          GOOGLE_PROJECT_ID_STABLE: ""
-          GOOGLE_COMPUTE_ZONE_STABLE: ""
-          GOOGLE_CLUSTER_STABLE: ""
-          DEPLOYMENT_STABLE: ""
-          CONTAINER_STABLE: ""
-          NAMESPACE_STABLE: ""
-          GITOPS_STABLE_DEPLOYMENT_PATH: ""
+              only:
+                - /release\/.*/
       - master:
           name: "Update Master"
           skip: false
           context: "global"
           requires:
-            - "Release/1"
+            - Publish
       - slack_msg:
           name: "Slack Notification"
           skip: false
           context: "global"
           requires:
-            - Release/1
+            - Publish
 # END DEVOPS CONFIG
 jobs:
   checkout:
@@ -127,10 +101,6 @@ jobs:
             else
               echo "Not release branch - moving forward." ;
             fi
-      - run:
-          name: Load Submodules
-          command: |
-            git submodule update --init --recursive
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -406,130 +376,14 @@ jobs:
           root: ~/project
           paths:
             - ./
-  deploy:
+  publish:
     docker:
-      - image: google/cloud-sdk
+      - image: cimg/node:18.4
     parameters:
-      GITOPS_ORG:
-        description: "The GitOps Organization"
-        default: ""
-        type: string
-      GITOPS_REPO:
-        description: "The GitOps Repository"
-        default: ""
-        type: string
-      GOOGLE_PROJECT_ID_ALPHA:
-        description: "The Alpha Google Project ID"
-        default: ""
-        type: string
-      GOOGLE_COMPUTE_ZONE_ALPHA:
-        description: "The Alpha Google Compute Zone"
-        default: ""
-        type: string
-      GOOGLE_CLUSTER_ALPHA:
-        description: "The Alpha Google Kubernetes Cluster Name"
-        default: ""
-        type: string
-      DEPLOYMENT_ALPHA:
-        description: "The Alpha Kubernetes Deployment Name"
-        default: ""
-        type: string
-      CONTAINER_ALPHA:
-        description: "The Beta Kubernetes Container Name"
-        default: ""
-        type: string
-      NAMESPACE_ALPHA:
-        description: "The Target Alpha Kubernetes Namespace"
-        default: ""
-        type: string
-      GITOPS_ALPHA_DEPLOYMENT_PATH:
-        description: "The Path for the Alpha GitPps Deployment Configuration"
-        default: ""
-        type: string
-      GOOGLE_PROJECT_ID_BETA:
-        description: "The Beta Google Project ID"
-        default: ""
-        type: string
-      GOOGLE_COMPUTE_ZONE_BETA:
-        description: "The Beta Google Compute Zone"
-        default: ""
-        type: string
-      GOOGLE_CLUSTER_BETA:
-        description: "The Beta Google Kubernetes Cluster Name"
-        default: ""
-        type: string
-      DEPLOYMENT_BETA:
-        description: "The Beta Kubernetes Deployment Name"
-        default: ""
-        type: string
-      CONTAINER_BETA:
-        description: "The Beta Kubernetes Container Name"
-        default: ""
-        type: string
-      NAMESPACE_BETA:
-        description: "The Target Beta Kubernetes Namespace"
-        default: ""
-        type: string
-      GITOPS_BETA_DEPLOYMENT_PATH:
-        description: "The Path for the Beta GitPps Deployment Configuration"
-        default: ""
-        type: string
-      GOOGLE_PROJECT_ID_STABLE:
-        description: "The Stable Google Project ID"
-        default: ""
-        type: string
-      GOOGLE_COMPUTE_ZONE_STABLE:
-        description: "The Stable Google Compute Zone"
-        default: ""
-        type: string
-      GOOGLE_CLUSTER_STABLE:
-        description: "The Stable Google Kubernetes Cluster Name"
-        default: ""
-        type: string
-      DEPLOYMENT_STABLE:
-        description: "The Stable Kubernetes Deployment Name"
-        default: ""
-        type: string
-      CONTAINER_STABLE:
-        description: "The Stable Kubernetes Container Name"
-        default: ""
-        type: string
-      NAMESPACE_STABLE:
-        description: "The Target Stable Kubernetes Namespace"
-        default: ""
-        type: string
-      GITOPS_STABLE_DEPLOYMENT_PATH:
-        description: "The Path for the Stable GitPps Deployment Configuration"
-        default: ""
-        type: string
       skip:
-        description: "Skip Deploy"
+        description: "Skip Publish"
         default: false
         type: boolean
-    environment:
-      GITOPS_ORG: << parameters.GITOPS_ORG >>
-      GITOPS_REPO: << parameters.GITOPS_REPO >>
-      GOOGLE_PROJECT_ID_ALPHA: << parameters.GOOGLE_PROJECT_ID_ALPHA >>
-      GOOGLE_COMPUTE_ZONE_ALPHA: << parameters.GOOGLE_COMPUTE_ZONE_ALPHA >>
-      GOOGLE_CLUSTER_ALPHA: << parameters.GOOGLE_CLUSTER_ALPHA >>
-      DEPLOYMENT_ALPHA: << parameters.DEPLOYMENT_ALPHA >>
-      CONTAINER_ALPHA: << parameters.CONTAINER_ALPHA >>
-      GITOPS_ALPHA_DEPLOYMENT_PATH: << parameters.GITOPS_ALPHA_DEPLOYMENT_PATH >>
-      NAMESPACE_ALPHA: << parameters.NAMESPACE_ALPHA >>
-      GOOGLE_PROJECT_ID_BETA: << parameters.GOOGLE_PROJECT_ID_BETA >>
-      GOOGLE_COMPUTE_ZONE_BETA: << parameters.GOOGLE_COMPUTE_ZONE_BETA >>
-      GOOGLE_CLUSTER_BETA: << parameters.GOOGLE_CLUSTER_BETA >>
-      GITOPS_BETA_DEPLOYMENT_PATH: << parameters.GITOPS_BETA_DEPLOYMENT_PATH >>
-      DEPLOYMENT_BETA: << parameters.DEPLOYMENT_BETA >>
-      CONTAINER_BETA: << parameters.CONTAINER_BETA >>
-      NAMESPACE_BETA: << parameters.NAMESPACE_BETA >>
-      GOOGLE_PROJECT_ID_STABLE: << parameters.GOOGLE_PROJECT_ID_STABLE >>
-      GOOGLE_COMPUTE_ZONE_STABLE: << parameters.GOOGLE_COMPUTE_ZONE_STABLE >>
-      GOOGLE_CLUSTER_STABLE: << parameters.GOOGLE_CLUSTER_STABLE >>
-      DEPLOYMENT_STABLE: << parameters.DEPLOYMENT_STABLE >>
-      CONTAINER_STABLE: << parameters.CONTAINER_STABLE >>
-      NAMESPACE_STABLE: << parameters.NAMESPACE_STABLE >>
-      GITOPS_STABLE_DEPLOYMENT_PATH: << parameters.GITOPS_STABLE_DEPLOYMENT_PATH >>
     working_directory: ~/project
     steps:
       - when:
@@ -557,64 +411,22 @@ jobs:
           command: |
             source .circleci/env
             if [[ "$TAG" = "ALPHA" ]] ; then
-              echo "export GOOGLE_PROJECT_ID=$GOOGLE_PROJECT_ID_ALPHA" >> .circleci/env
-              echo "export GOOGLE_COMPUTE_ZONE=$GOOGLE_COMPUTE_ZONE_ALPHA" >> .circleci/env
-              echo "export GOOGLE_CLUSTER=$GOOGLE_CLUSTER_ALPHA" >> .circleci/env
-              echo "export DEPLOYMENT=$DEPLOYMENT_ALPHA" >> .circleci/env
-              echo "export CONTAINER=$CONTAINER_ALPHA" >> .circleci/env
-              echo "export NAMESPACE=$NAMESPACE_ALPHA" >> .circleci/env
-              echo "export GITOPS_DEPLOYMENT_PATH=$GITOPS_ALPHA_DEPLOYMENT_PATH" >> .circleci/env
+              echo "Publishing alpha library"
             elif [[ "$TAG" = "BETA" ]] ; then
-              echo "export GOOGLE_PROJECT_ID=$GOOGLE_PROJECT_ID_BETA" >> .circleci/env
-              echo "export GOOGLE_COMPUTE_ZONE=$GOOGLE_COMPUTE_ZONE_BETA" >> .circleci/env
-              echo "export GOOGLE_CLUSTER=$GOOGLE_CLUSTER_BETA" >> .circleci/env
-              echo "export DEPLOYMENT=$DEPLOYMENT_BETA" >> .circleci/env
-              echo "export CONTAINER=$CONTAINER_BETA" >> .circleci/env
-              echo "export NAMESPACE=$NAMESPACE_BETA" >> .circleci/env
-              echo "export GITOPS_DEPLOYMENT_PATH=$GITOPS_BETA_DEPLOYMENT_PATH" >> .circleci/env
+              echo "Publishing beta library"
             elif [[ "$TAG" =~ "STABLE" ]] ; then
-              echo "export GOOGLE_PROJECT_ID=$GOOGLE_PROJECT_ID_STABLE" >> .circleci/env
-              echo "export GOOGLE_COMPUTE_ZONE=$GOOGLE_COMPUTE_ZONE_STABLE" >> .circleci/env
-              echo "export GOOGLE_CLUSTER=$GOOGLE_CLUSTER_STABLE" >> .circleci/env
-              echo "export DEPLOYMENT=$DEPLOYMENT_STABLE" >> .circleci/env
-              echo "export CONTAINER=$CONTAINER_STABLE" >> .circleci/env
-              echo "export NAMESPACE=$NAMESPACE_STABLE" >> .circleci/env
-              echo "export GITOPS_DEPLOYMENT_PATH=$GITOPS_STABLE_DEPLOYMENT_PATH" >> .circleci/env
+              echo "Publishing production library"
             else
               echo "Unknown tag $TAG"
               exit 1
             fi
       - run:
-          name: Setup Google Cloud SDK
+          name: Set up NPM Authentication
           command: |
-            source .circleci/env
-            apt-get install -qq -y gettext
-            echo $GCLOUD_SERVICE_KEY | base64 -d > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER}
+            npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN}
       - run:
-          name: Submit Build
-          command: |
-            source .circleci/env
-            gcloud builds submit --tag gcr.io/${GOOGLE_PROJECT_ID}/${DEPLOYMENT}:$(git describe --abbrev=0) .
-      - run:
-          name: Sync GitOps Repo
-          command: |
-            source .circleci/env
-            curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 > ./yq && chmod +x ./yq
-            git clone https://${GITOPS_USER}:${GITOPS_PASS}@github.com/${GITOPS_ORG}/${GITOPS_REPO}.git /tmp/${GITOPS_REPO}
-            kubectl annotate kubernetes.io/change-cause="Release $(git describe --abbrev=0)" --namespace ${NAMESPACE} --local --dry-run=client -o yaml -f <( kubectl set image deployment ${DEPLOYMENT} ${CONTAINER}=gcr.io/${GOOGLE_PROJECT_ID}/${DEPLOYMENT}:$(git describe --abbrev=0) --namespace ${NAMESPACE} --dry-run=client -o yaml ) | ./yq eval 'del(.status)' | grep -v 'resourceVersion\|uid\|generation\|creationTimestamp\|deployment.kubernetes.io\/revision' > /tmp/${GITOPS_REPO}/${GITOPS_DEPLOYMENT_PATH}
-            git -C /tmp/${GITOPS_REPO} add .
-            git -C /tmp/${GITOPS_REPO} -c user.name="$(git log -1 --pretty=format:'%an')" -c user.email="$(git log -1 --pretty=format:'%ae')" commit --author "$(git log -1 --pretty=format:'%an <%ae>')" -m "Deployment ${DEPLOYMENT} updated to version $(git describe --abbrev=0), changes to ${GITOPS_DEPLOYMENT_PATH}"
-            git -C /tmp/${GITOPS_REPO} push
-      - run:
-          name: Rollout
-          command: |
-            source .circleci/env
-            kubectl apply -f /tmp/${GITOPS_REPO}/${GITOPS_DEPLOYMENT_PATH}
-            kubectl rollout status deployment/${DEPLOYMENT} --namespace=${NAMESPACE}
+          name: Publish to NPM
+          command: npm publish
   master:
     docker:
       - image: cimg/node:18.4
@@ -684,7 +496,7 @@ jobs:
                 command: circleci-agent step halt
       - checkout
       - slack/notify:
-          message: "Release ${CIRCLE_PROJECT_REPONAME}@$(git describe --abbrev=0) deployed"
+          message: "Release ${CIRCLE_PROJECT_REPONAME}@$(git describe --abbrev=0) published"
           color: "#5031aa"
           webhook: "${SLACK_HOOK}"
           include_visit_job_action: true
