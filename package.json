@@ -1,6 +1,6 @@
 {
   "name": "@wiser/create-react-lib",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "./dist/create-react-lib",
   "bin": "./dist/create-react-lib",
@@ -18,7 +18,8 @@
     "tsc": "npm run clean && node node_modules/typescript/bin/tsc --p tsconfig.json",
     "clean": "rm -rf dist",
     "lint": "node node_modules/tslint/bin/tslint -c tslint.json \"src/**/*.ts\"",
-    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore"
+    "docs": "node node_modules/typedoc/bin/typedoc --out docs/ src/ && echo '*\n!.gitignore' > docs/.gitignore",
+    "prepack": "./prepack.js"
   },
   "repository": {
     "type": "git",
