@@ -1,5 +1,6 @@
 include .gitignore
-src/
-packages/**/.git
 !packages/
 !dist/
+src/
+packages/**/.git
+packages/**/_git
