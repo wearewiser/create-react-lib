@@ -3,4 +3,4 @@ include .gitignore
 !dist/
 src/
 packages/**/.git
-packages/**/_git
+packages/**/__git
