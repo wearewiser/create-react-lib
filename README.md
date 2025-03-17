@@ -47,3 +47,9 @@ Then update the git submodules
 ```bash
 git submodule update --init --recursive
 ```
+
+If you pack locally, the prepack script will cause you to need to reinitialize the submodules:
+
+```bash
+git submodule update --init packages/react-lib
+```
