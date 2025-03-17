@@ -101,6 +101,10 @@ jobs:
             else
               echo "Not release branch - moving forward." ;
             fi
+      - run:
+          name: Load Submodules
+          command: |
+            git submodule update --init --recursive
       - persist_to_workspace:
           root: ~/project
           paths:
