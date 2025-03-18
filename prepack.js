@@ -33,7 +33,7 @@ async function rm(src) {
 
 async function main() {
   await move('packages/react-lib/package.json', 'packages/react-lib/_package.json');
-  await move('packages/react-lib/package-lock.json', 'packages/react-lib/_package.json');
+  await move('packages/react-lib/package-lock.json', 'packages/react-lib/_package-lock.json');
   await move('packages/react-lib/.storybook', 'packages/react-lib/__storybook');
   await move('packages/react-lib/.eslintrc', 'packages/react-lib/__eslintrc');
   await move('packages/react-lib/.gitignore', 'packages/react-lib/__gitignore');
